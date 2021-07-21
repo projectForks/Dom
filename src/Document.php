@@ -67,6 +67,11 @@ class Document extends Node implements StreamInterface {
 			$string = $this->domDocument->saveHTML();
 		}
 
+		$lastCharacter = substr($string, -1);
+		if($lastCharacter !== PHP_EOL) {
+			$string .= PHP_EOL;
+		}
+
 		return $string;
 	}
 
