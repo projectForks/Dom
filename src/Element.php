@@ -117,7 +117,8 @@ class Element extends Node {
 		/** @var DOMDocument $nativeTempDocument */
 		$nativeTempDocument = $tempDocument->domNode;
 		$nativeTempDocument->loadHTML(
-			"<html-fragment>$innerHTML</html-fragment>"
+			"<html-fragment>$innerHTML</html-fragment>",
+			Document::LIBXML_OPTIONS
 		);
 		$innerFragmentNode = $nativeTempDocument->getElementsByTagName(
 			"html-fragment")->item(0);
@@ -165,7 +166,7 @@ class Element extends Node {
 		$tempDocument = new Document();
 		/** @var DOMDocument $nativeTempDocument */
 		$nativeTempDocument = $tempDocument->domNode;
-		$nativeTempDocument->loadHTML($outerHTML);
+		$nativeTempDocument->loadHTML($outerHTML, Document::LIBXML_OPTIONS);
 		$body = $nativeTempDocument->getElementsByTagName("body")->item(0);
 		/** @var DOMDocument $nativeThisDocument */
 		$nativeThisDocument = $this->ownerDocument->domNode;

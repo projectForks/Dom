@@ -3,6 +3,7 @@ namespace Gt\Dom;
 
 use Gt\Dom\Exception\MimeTypeNotSupportedException;
 use Gt\Dom\Facade\HTMLDocumentFactory;
+use Gt\Dom\Facade\LazyLoadDomDocument;
 use Gt\Dom\Facade\XMLDocumentFactory;
 
 class DOMParser {
@@ -31,10 +32,21 @@ class DOMParser {
 		$this->checkMimeType($mimeType);
 		$documentClass = self::MIME_TYPE_CLASS[$mimeType];
 		$factoryClass = self::FACTORY_CLASS[$documentClass];
-		return call_user_func(
+		/** @var HTMLDocument|XMLDocument $document */
+		$document = call_user_func(
 			"$factoryClass::create",
 			$string
 		);
+		$refObject = new \ReflectionObject($document);
+		$refProperty = $refObject->getProperty("domDocument");
+		$refProperty->setAccessible(true);
+		/** @var LazyLoadDomDocument $lazyLoadDomDocument */
+		$lazyLoadDomDocument = $refProperty->getValue($document);
+		if($lazyLoadDomDocument instanceof LazyLoadDomDocument) {
+			$lazyLoadDomDocument->lazyInstantiate();
+		}
+
+		return $document;
 	}
 
 	private function checkMimeType(string $mimeType):void {

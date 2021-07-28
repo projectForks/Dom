@@ -9,6 +9,7 @@ use Gt\Dom\Exception\NotSupportedException;
 use Gt\Dom\Facade\DOMDocumentFacade;
 use Gt\Dom\Facade\DOMImplementationFactory;
 use Gt\Dom\Facade\HTMLCollectionFactory;
+use Gt\Dom\Facade\LazyLoadDomDocument;
 use Gt\Dom\Facade\NodeClass\DOMNodeFacade;
 use Gt\Dom\Facade\NodeIteratorFactory;
 use Gt\Dom\Facade\NodeListFactory;
@@ -46,21 +47,25 @@ class Document extends Node implements StreamInterface {
 	use DocumentStream;
 	use ParentNode;
 
-	protected DOMDocumentFacade $domDocument;
+	const LIBXML_OPTIONS = LIBXML_COMPACT | LIBXML_NOERROR | LIBXML_NOWARNING | LIBXML_NONET;
+	protected DOMDocumentFacade|LazyLoadDomDocument $domDocument;
+	protected string $content;
 
 	public function __construct() {
-		libxml_use_internal_errors(true);
 		$this->domDocument = new DOMDocumentFacade(
 			$this,
 			"1.0",
 			"utf-8"
 		);
-		$format = $this->domDocument->formatOutput;
 
 		parent::__construct($this->domDocument);
 	}
 
 	public function __toString():string {
+		if($this->domDocument instanceof LazyLoadDomDocument) {
+			return $this->content;
+		}
+
 		if($this instanceof XMLDocument) {
 			$string = $this->domDocument->saveXML();
 		}

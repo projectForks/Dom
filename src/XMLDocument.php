@@ -12,7 +12,7 @@ class XMLDocument extends Document {
 		}
 
 		$this->open();
-		$this->domDocument->loadXML($xml);
+		$this->domDocument->loadXML($xml, Document::LIBXML_OPTIONS);
 	}
 
 	protected function __prop_get_contentType():string {

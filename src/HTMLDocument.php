@@ -1,7 +1,11 @@
 <?php
 namespace Gt\Dom;
 
+use Gt\Dom\Facade\DOMDocumentFacade;
+use Gt\Dom\Facade\LazyLoadDomDocument;
 use Gt\Dom\HTMLElement\HTMLElement;
+use Gt\PropFunc\MagicProp;
+use ReflectionObject;
 
 /**
  * @method HTMLElement createElement(string $tagName)
@@ -11,23 +15,33 @@ class HTMLDocument extends Document {
 	const EMPTY_DOCUMENT_STRING = self::DEFAULT_DOCTYPE . "<html><head></head><body></body></html>";
 	const W3_NAMESPACE = "http://www.w3.org/1999/xhtml";
 
+	/** @noinspection PhpMissingParentConstructorInspection */
 	public function __construct(string $html = "") {
+		$this->content = $html;
+		$this->domDocument = new LazyLoadDomDocument(
+			fn() => $this->lazyConstruct(),
+			$this
+		);
+	}
+
+	private function lazyConstruct():void {
 		parent::__construct();
 
-		if(strlen($html) === 0) {
-			$html = self::EMPTY_DOCUMENT_STRING;
+		if(strlen($this->content) === 0) {
+			$this->content = self::EMPTY_DOCUMENT_STRING;
 		}
 
 // Default the doctype to HTML5's doctype.
-		$posDoctype = stripos($html, "<!doctype");
-		$posFirstAngleBracket = strpos($html, "<");
+		$posDoctype = stripos($this->content, "<!doctype");
+		$posFirstAngleBracket = strpos($this->content, "<");
 		if(false === $posDoctype
 		|| $posDoctype > $posFirstAngleBracket) {
-			$html = self::DEFAULT_DOCTYPE . $html;
+			$this->content = self::DEFAULT_DOCTYPE . $this->content;
 		}
 
 		$this->open();
-		$html = preg_replace_callback(
+		/** @noinspection PhpFieldAssignmentTypeMismatchInspection */
+		$this->content = preg_replace_callback(
 			'/[\x{80}-\x{10FFFF}]/u',
 			function($match) {
 				return mb_convert_encoding(
@@ -36,9 +50,9 @@ class HTMLDocument extends Document {
 					"UTF-8"
 				);
 			},
-			$html
+			$this->content
 		);
-		$this->domDocument->loadHTML($html);
+		$this->domDocument->loadHTML($this->content, Document::LIBXML_OPTIONS);
 
 		if(!$this->domDocument->documentElement) {
 			$html = $this->domDocument->createElement("html");

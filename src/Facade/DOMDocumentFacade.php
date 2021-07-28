@@ -17,6 +17,7 @@ use DOMNotation;
 use DOMProcessingInstruction;
 use DOMText;
 use DOMXPath;
+use Exception;
 use Gt\CssXPath\Translator;
 use Gt\Dom\Attr;
 use Gt\Dom\CDATASection;
@@ -250,7 +251,11 @@ class DOMDocumentFacade extends DOMDocument {
 		DOMNode $contextNode = null
 	):DOMNodeList {
 		$domXPath = new DOMXPath($this);
-		$result = $domXPath->query($expression, $contextNode);
+		$result = null;
+		try {
+			$result = $domXPath->query($expression, $contextNode);
+		}
+		catch(Exception) {}
 		if(!$result) {
 			throw new XPathQueryException($expression);
 		}
