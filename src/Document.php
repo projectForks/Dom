@@ -55,6 +55,7 @@ class Document extends Node implements StreamInterface {
 			"1.0",
 			"utf-8"
 		);
+		$format = $this->domDocument->formatOutput;
 
 		parent::__construct($this->domDocument);
 	}

@@ -2,7 +2,7 @@
 require __DIR__ . "/../../vendor/autoload.php";
 
 echo "PHP.Gt/Dom speed benchmark test.", PHP_EOL;
-echo "Create a <ul> containing 1,000 items from an array of random values.", PHP_EOL;
+echo "Create a <ul> containing 100 items from an array of random values.", PHP_EOL;
 
 $t = microtime(true);
 $fakeData = [];

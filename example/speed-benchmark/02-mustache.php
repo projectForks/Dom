@@ -1,31 +1,29 @@
 <?php
 require __DIR__ . "/../../vendor/autoload.php";
 
-echo "Twig speed benchmark test.", PHP_EOL;
+echo "Mustache speed benchmark test.", PHP_EOL;
 echo "Create a <ul> containing 100 items from an array of random values.", PHP_EOL;
 
 $t = microtime(true);
 $fakeData = [];
 for($i = 0; $i < 100; $i++) {
-	array_push($fakeData, uniqid());
+	array_push($fakeData, ["name" => uniqid()]);
 }
 
-$twigContent = <<<TWIG
+$mustacheContent = <<<MUSTACHE
 <!DOCTYPE HTML>
 <ul>
-	{% for datum in fakeData %}
-		<li>{{ datum }}</li>
-	{% endfor %} 
+	{{#fakeData}}
+		<li>{{name}}</li>
+	{{/fakeData}}
 </ul>
-TWIG;
+MUSTACHE;
 
-$loader = new \Twig\Loader\ArrayLoader([
-	"index" => $twigContent
-]);
-$twig = new \Twig\Environment($loader);
+$mustache = new Mustache_Engine();
+$template = $mustache->loadTemplate($mustacheContent);
 
 echo "OUTPUT START:", PHP_EOL;
-echo $twig->render("index", ["fakeData" => $fakeData]);
+echo $template->render(["fakeData" => $fakeData]);
 echo "OUTPUT END.", PHP_EOL;
 
 $dt = microtime(true) - $t;

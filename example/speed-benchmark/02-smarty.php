@@ -1,7 +1,7 @@
 <?php
 require __DIR__ . "/../../vendor/autoload.php";
 
-echo "Twig speed benchmark test.", PHP_EOL;
+echo "Smarty speed benchmark test.", PHP_EOL;
 echo "Create a <ul> containing 100 items from an array of random values.", PHP_EOL;
 
 $t = microtime(true);
@@ -10,22 +10,20 @@ for($i = 0; $i < 100; $i++) {
 	array_push($fakeData, uniqid());
 }
 
-$twigContent = <<<TWIG
+$smartyContent = <<<SMARTY
 <!DOCTYPE HTML>
 <ul>
-	{% for datum in fakeData %}
-		<li>{{ datum }}</li>
-	{% endfor %} 
+	{foreach \$fakeData as \$datum}
+		<li>{\$datum}</li>
+	{/foreach}
 </ul>
-TWIG;
+SMARTY;
 
-$loader = new \Twig\Loader\ArrayLoader([
-	"index" => $twigContent
-]);
-$twig = new \Twig\Environment($loader);
 
 echo "OUTPUT START:", PHP_EOL;
-echo $twig->render("index", ["fakeData" => $fakeData]);
+$smarty = new Smarty();
+$smarty->assign("fakeData", $fakeData);
+$smarty->display("string:$smartyContent");
 echo "OUTPUT END.", PHP_EOL;
 
 $dt = microtime(true) - $t;
