@@ -89,19 +89,13 @@ abstract class Node {
 	const DOCUMENT_POSITION_CONTAINED_BY = 0b010000;
 	const DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC = 0b100000;
 
-	public string $uuid;
-
 	/**
 	 * @param DOMNode $domNode DOMNode or any extension
 	 * @noinspection PhpMissingParamTypeInspection
 	 */
 	protected function __construct(
 		protected $domNode
-	) {
-		if(!empty($this->domNode->uuid)) {
-			$this->uuid = $this->domNode->uuid;
-		}
-	}
+	) {}
 
 	/**
 	 * Adds the specified childNode argument as the last child to the

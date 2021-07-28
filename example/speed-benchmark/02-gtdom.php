@@ -16,7 +16,7 @@ $ul = $document->createElement("ul");
 $liNodes = [];
 foreach($fakeData as $datum) {
 	$li = $document->createElement("li");
-	$li->innerHTML = $datum;
+	$li->textContent = $datum;
 	array_push($liNodes, $li);
 }
 
