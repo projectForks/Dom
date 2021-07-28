@@ -11,6 +11,7 @@ use Gt\Dom\Exception\XPathQueryException;
 use Gt\Dom\Facade\DOMTokenListFactory;
 use Gt\Dom\Facade\HTMLCollectionFactory;
 use Gt\Dom\Facade\NamedNodeMapFactory;
+use Gt\Dom\Facade\NodeClass\DOMDocumentFragmentFacade;
 use Gt\Dom\Facade\NodeClass\DOMElementFacade;
 use Gt\Dom\Facade\NodeListFactory;
 
@@ -101,6 +102,15 @@ class Element extends Node {
 		while($child = $this->firstChild) {
 			/** @var Element $child */
 			$child->parentNode->removeChild($child);
+		}
+
+		if(strlen($innerHTML) === 0) {
+			return;
+		}
+
+		if(!(strstr($innerHTML, "<") && strstr($innerHTML, ">")) ) {
+			$this->append($innerHTML);
+			return;
 		}
 
 		$tempDocument = new Document();

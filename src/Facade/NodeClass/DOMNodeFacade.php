@@ -8,4 +8,5 @@ use Gt\Dom\Facade\DOMDocumentFacade;
  * @property-read DOMDocumentFacade $ownerDocument
  */
 class DOMNodeFacade extends DOMNode {
+	public string $uuid;
 }

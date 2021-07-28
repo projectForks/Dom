@@ -556,6 +556,7 @@ class NodeTest extends TestCase {
 		$message = "Here is some content!";
 		$sut = NodeTestFactory::createNode("example");
 		$sut->innerHTML = "<p>$message</p>";
+		$sut->ownerDocument->appendChild($sut);
 		self::assertEquals($message, $sut->textContent);
 	}
 

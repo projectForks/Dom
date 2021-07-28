@@ -197,14 +197,15 @@ class DOMDocumentFacade extends DOMDocument {
 		"Gt\Dom\Facade\NodeClass\DOMElementFacade::video" => HTMLVideoElement::class,
 	];
 
-	/** @var DOMNode[] */
+	/** @var array<string, DOMNode> */
 	private array $domNodeList = [];
-	/** @var Node[] */
+	/** @var array<string,Node> */
 	private array $gtNodeList = [];
 
 	/**
 	 * @param string $version
 	 * @param string $encoding
+	 * @noinspection PhpMissingParamTypeInspection
 	 */
 	public function __construct(
 		private Document $gtDocument,
@@ -219,30 +220,28 @@ class DOMDocumentFacade extends DOMDocument {
 		if(!$node) {
 			$node = $this;
 		}
+		/** @var DOMElementFacade $node */
 
-		do {
-			$key = array_search(
-				$node,
-				$this->domNodeList,
-				true
-			);
-			if(!is_int($key) || !isset($this->gtNodeList[$key])) {
-				self::cacheNativeDomNode($node);
-			}
+		if(!isset($node->uuid)) {
+			$node->uuid = $this->generateUuid();
 		}
-		while(!is_int($key));
-		return $this->gtNodeList[$key];
+
+		if(!isset($this->gtNodeList[$node->uuid])) {
+			self::cacheNativeDomNode($node, $node->uuid);
+		}
+		return $this->gtNodeList[$node->uuid];
 	}
 
 	public function getNativeDomNode(Node $node):DOMNode {
-		do {
-			$key = array_search($node, $this->gtNodeList, true);
-			if(!is_int($key) || !isset($this->domNodeList[$key])) {
-				self::cacheGtDomNode($node);
-			}
+		if(!isset($node->uuid)) {
+			$node->uuid = $this->generateUuid();
 		}
-		while(!is_int($key));
-		return $this->domNodeList[$key];
+
+		if(!isset($this->domNodeList[$node->uuid])) {
+			self::cacheGtDomNode($node);
+		}
+
+		return $this->domNodeList[$node->uuid];
 	}
 
 	/** @return DOMNodeList<DOMNode> */
@@ -259,7 +258,7 @@ class DOMDocumentFacade extends DOMDocument {
 		return $result;
 	}
 
-	private function cacheNativeDomNode(DOMNode $node):void {
+	private function cacheNativeDomNode(DOMNode $node, string $uuid):void {
 		if($node instanceof DOMDocumentFacade) {
 			$object = $node->gtDocument;
 		}
@@ -289,8 +288,9 @@ class DOMDocumentFacade extends DOMDocument {
 			$constructor->setAccessible(true);
 			$constructor->invoke($object, $node);
 		}
-		array_push($this->domNodeList, $node);
-		array_push($this->gtNodeList, $object);
+
+		$this->domNodeList[$uuid] = $node;
+		$this->gtNodeList[$uuid] = $object;
 	}
 
 	private function cacheGtDomNode(Node $node):void {
@@ -298,8 +298,8 @@ class DOMDocumentFacade extends DOMDocument {
 		$prop = $class->getProperty("domNode");
 		$prop->setAccessible(true);
 		$domNode = $prop->getValue($node);
-		array_push($this->domNodeList, $domNode);
-		array_push($this->gtNodeList, $node);
+		$this->domNodeList[$node->uuid] = $domNode;
+		$this->gtNodeList[$node->uuid] = $node;
 	}
 
 	private function registerNodeClasses():void {
@@ -330,5 +330,9 @@ class DOMDocumentFacade extends DOMDocument {
 				// @codeCoverageIgnoreEnd
 			}
 		}
+	}
+
+	private function generateUuid():string {
+		return uniqid("gt-");
 	}
 }

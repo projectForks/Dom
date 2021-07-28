@@ -89,13 +89,19 @@ abstract class Node {
 	const DOCUMENT_POSITION_CONTAINED_BY = 0b010000;
 	const DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC = 0b100000;
 
+	public string $uuid;
+
 	/**
 	 * @param DOMNode $domNode DOMNode or any extension
 	 * @noinspection PhpMissingParamTypeInspection
 	 */
 	protected function __construct(
 		protected $domNode
-	) {}
+	) {
+		if(!empty($this->domNode->uuid)) {
+			$this->uuid = $this->domNode->uuid;
+		}
+	}
 
 	/**
 	 * Adds the specified childNode argument as the last child to the
@@ -126,7 +132,10 @@ abstract class Node {
 			$nativeAppended = $this->domNode->appendChild(
 				$nativeDomChild
 			);
-			$aChild = $this->ownerDocument->getGtDomNode($nativeAppended);
+			if($nativeAppended !== $nativeDomChild) {
+				$aChild = $this->ownerDocument->getGtDomNode($nativeAppended);
+			}
+
 		}
 		/** @noinspection PhpRedundantCatchClauseInspection */
 		catch(NativeDOMException $exception) {
@@ -631,6 +640,9 @@ abstract class Node {
 			return $this->nodeValue;
 		}
 
+		$nativeNode = $this->ownerDocument->getNativeDomNode($this);
+		return $nativeNode->nodeValue;
+
 		$len = $this->childNodes->length;
 		if($len === 0) {
 			return "";
@@ -658,8 +670,8 @@ abstract class Node {
 			$this->nodeValue = $value;
 		}
 		else {
-			$text = $this->ownerDocument->createTextNode($value);
-			$this->appendChild($text);
+			$nativeNode = $this->ownerDocument->getNativeDomNode($this);
+			$nativeNode->nodeValue = $value;
 		}
 	}
 }

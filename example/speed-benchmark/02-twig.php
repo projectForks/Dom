@@ -6,7 +6,7 @@ echo "Create a <ul> containing 1,000 items from an array of random values.", PHP
 
 $t = microtime(true);
 $fakeData = [];
-for($i = 0; $i < 1_000; $i++) {
+for($i = 0; $i < 100; $i++) {
 	array_push($fakeData, uniqid());
 }
 

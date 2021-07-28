@@ -6,18 +6,21 @@ echo "Create a <ul> containing 1,000 items from an array of random values.", PHP
 
 $t = microtime(true);
 $fakeData = [];
-for($i = 0; $i < 1_000; $i++) {
+for($i = 0; $i < 100; $i++) {
 	array_push($fakeData, uniqid());
 }
 
 $domDoc = new DOMDocument("1.0", "utf-8");
 $ul = $domDoc->createElement("ul");
 
+$liNodes = [];
 foreach($fakeData as $datum) {
 	$li = $domDoc->createElement("li");
 	$li->nodeValue = $datum;
-	$ul->appendChild($li);
+	array_push($liNodes, $li);
 }
+
+$ul->append(...$liNodes);
 
 $domDoc->appendChild($ul);
 echo "OUTPUT START:", PHP_EOL;
