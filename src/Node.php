@@ -636,22 +636,6 @@ abstract class Node {
 
 		$nativeNode = $this->ownerDocument->getNativeDomNode($this);
 		return $nativeNode->nodeValue;
-
-		$len = $this->childNodes->length;
-		if($len === 0) {
-			return "";
-		}
-
-		$text = "";
-		for($i = 0; $i < $len; $i++) {
-			$node = $this->childNodes->item($i);
-			if($node instanceof Comment
-			|| $node instanceof ProcessingInstruction) {
-				continue;
-			}
-			$text .= $node->textContent;
-		}
-		return $text;
 	}
 
 	/** @link https://developer.mozilla.org/en-US/docs/Web/API/Node/textContent */

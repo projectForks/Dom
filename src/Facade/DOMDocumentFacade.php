@@ -223,23 +223,23 @@ class DOMDocumentFacade extends DOMDocument {
 		$this->registerNodeClasses();
 	}
 
-	public function getGtDomNode(DOMNode $node = null):Node {
-		if(!$node) {
-			$node = $this;
+	public function getGtDomNode(DOMNode $nativeNode = null):Node {
+		if(!$nativeNode) {
+			$nativeNode = $this;
 		}
 
-		if(!$this->gtNodeList->contains($node)) {
-			self::cacheNativeDomNode($node);
+		if(!$this->gtNodeList->contains($nativeNode)) {
+			self::cacheNativeDomNode($nativeNode);
 		}
-		return $this->gtNodeList->offsetGet($node);
+		return $this->gtNodeList->offsetGet($nativeNode);
 	}
 
-	public function getNativeDomNode(Node $node):DOMNode {
-		if(!$this->domNodeList->contains($node)) {
-			self::cacheGtDomNode($node);
+	public function getNativeDomNode(Node $gtNode):DOMNode {
+		if(!$this->domNodeList->contains($gtNode)) {
+			self::cacheGtDomNode($gtNode);
 		}
 
-		return $this->domNodeList->offsetGet($node);
+		return $this->domNodeList->offsetGet($gtNode);
 	}
 
 	/** @return DOMNodeList<DOMNode> */
@@ -260,16 +260,16 @@ class DOMDocumentFacade extends DOMDocument {
 		return $result;
 	}
 
-	private function cacheNativeDomNode(DOMNode $node):void {
-		if($node instanceof DOMDocumentFacade) {
-			$object = $node->gtDocument;
+	private function cacheNativeDomNode(DOMNode $nativeNode):void {
+		if($nativeNode instanceof DOMDocumentFacade) {
+			$object = $nativeNode->gtDocument;
 		}
 		else {
-			$key = get_class($node);
-			if(!$node instanceof DOMAttrFacade) {
+			$key = get_class($nativeNode);
+			if(!$nativeNode instanceof DOMAttrFacade) {
 // DOMAttrFacade uses a local name as its "name" attribute - not for identification.
-				if($node->localName) {
-					$key .= "::" . $node->localName;
+				if($nativeNode->localName) {
+					$key .= "::" . $nativeNode->localName;
 				}
 			}
 			if(isset(self::NODE_CLASS_LIST[$key])) {
@@ -304,13 +304,13 @@ class DOMDocumentFacade extends DOMDocument {
 				$object = $this->objectCache[$gtNodeClass];
 			}
 			else {
-				$object = new $gtNodeClass($node);
+				$object = new $gtNodeClass($nativeNode);
 				$this->objectCache[$gtNodeClass] = $object;
 			}
 
 // Speed optimisation hack: Extend Node so this anon class can change the linked domNode.
 			$object = clone $object;
-			new class($object, $node) extends Node {
+			new class($object, $nativeNode) extends Node {
 				/** @noinspection PhpMissingParentConstructorInspection */
 				public function __construct(Node $gtNode, DOMNode $nativeNode) {
 					$gtNode->domNode = $nativeNode;
@@ -318,17 +318,31 @@ class DOMDocumentFacade extends DOMDocument {
 			};
 		}
 
-		$this->domNodeList->attach($object, $node);
-		$this->gtNodeList->attach($node, $object);
+		$this->domNodeList->attach($object, $nativeNode);
+		$this->gtNodeList->attach($nativeNode, $object);
 	}
 
 	private function cacheGtDomNode(Node $node):void {
-		$class = new ReflectionClass($node);
-		$prop = $class->getProperty("domNode");
-		$prop->setAccessible(true);
-		$domNode = $prop->getValue($node);
-		$this->domNodeList->attach($node, $domNode);
-		$this->gtNodeList->attach($domNode, $node);
+		new class($node, $this->domNodeList, $this->gtNodeList) extends Node {
+			/**
+			 * @param Node $gtNode
+			 * @param SplObjectStorage<Node, DOMNode> $domNodeList
+			 * @param SplObjectStorage<DOMNode, Node> $gtNodeList *
+			 * @noinspection PhpMissingParentConstructorInspection
+			 */
+			public function __construct(
+				Node $gtNode,
+				SplObjectStorage $domNodeList,
+				SplObjectStorage $gtNodeList
+			) {
+				if(!$domNodeList->contains($gtNode)) {
+					$domNodeList->attach($gtNode, $gtNode->domNode);
+				}
+				if(!$gtNodeList->contains($gtNode->domNode)) {
+					$gtNodeList->attach($gtNode->domNode, $gtNode);
+				}
+			}
+		};
 	}
 
 	private function registerNodeClasses():void {
