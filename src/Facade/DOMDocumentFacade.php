@@ -199,8 +199,12 @@ class DOMDocumentFacade extends DOMDocument {
 		"Gt\Dom\Facade\NodeClass\DOMElementFacade::video" => HTMLVideoElement::class,
 	];
 
+	/** @var SplObjectStorage<Node, DOMNode> */
 	private SplObjectStorage $domNodeList;
+	/** @var SplObjectStorage<DOMNode, Node> */
 	private SplObjectStorage $gtNodeList;
+	/** @var array<string, object> */
+	private array $objectCache;
 
 	/**
 	 * @param string $version
@@ -214,6 +218,7 @@ class DOMDocumentFacade extends DOMDocument {
 	) {
 		$this->domNodeList = new SplObjectStorage();
 		$this->gtNodeList = new SplObjectStorage();
+		$this->objectCache = [];
 		parent::__construct($version, $encoding);
 		$this->registerNodeClasses();
 	}
@@ -279,11 +284,38 @@ class DOMDocumentFacade extends DOMDocument {
 				}
 			}
 
-			$class = new ReflectionClass($gtNodeClass);
-			$object = $class->newInstanceWithoutConstructor();
-			$constructor = new ReflectionMethod($object, "__construct");
-			$constructor->setAccessible(true);
-			$constructor->invoke($object, $node);
+			/*
+			if(isset($this->reflectionCache[$gtNodeClass])) {
+				$object = $this->reflectionCache[$gtNodeClass];
+			}
+			else {
+				$class = new ReflectionClass($gtNodeClass);
+				$object = $class->newInstanceWithoutConstructor();
+				$this->reflectionCache[$gtNodeClass] = $object;
+//				$constructor = new ReflectionMethod($object, "__construct");
+//				$constructor->setAccessible(true);
+//				$constructor->invoke($object, $node);
+			}
+
+			$object = clone $object;
+			*/
+
+			if(isset($this->objectCache[$gtNodeClass])) {
+				$object = $this->objectCache[$gtNodeClass];
+			}
+			else {
+				$object = new $gtNodeClass($node);
+				$this->objectCache[$gtNodeClass] = $object;
+			}
+
+// Speed optimisation hack: Extend Node so this anon class can change the linked domNode.
+			$object = clone $object;
+			new class($object, $node) extends Node {
+				/** @noinspection PhpMissingParentConstructorInspection */
+				public function __construct(Node $gtNode, DOMNode $nativeNode) {
+					$gtNode->domNode = $nativeNode;
+				}
+			};
 		}
 
 		$this->domNodeList->attach($object, $node);

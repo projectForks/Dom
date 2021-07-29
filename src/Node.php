@@ -93,7 +93,7 @@ abstract class Node {
 	 * @param DOMNode $domNode DOMNode or any extension
 	 * @noinspection PhpMissingParamTypeInspection
 	 */
-	protected function __construct(
+	public function __construct(
 		protected $domNode
 	) {}
 
