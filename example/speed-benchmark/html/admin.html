@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Example administration page</title>
+	<link rel="stylesheet" href="/style.css" />
+	<script src="/script.js" defer></script>
+</head>
+<body>
+
+<header>
+	<h1>
+		<a href="/">Example Administration Page</a>
+	</h1>
+
+	<nav>
+		<ul>
+			<li>
+				<a href="/">Home</a>
+			</li>
+			<li>
+				<a href="/profile">Profile</a>
+			</li>
+			<li>
+				<a href="/users">Users</a>
+			</li>
+			<li>
+				<a href="/security">Security</a>
+			</li>
+		</ul>
+	</nav>
+</header>
+
+<main>
+	<h1>List of users</h1>
+
+	<ul>
+		<li>
+			<h2>
+				<a href="/user/{id}">{username}</a>
+			</h2>
+
+			<h3>{type}</h3>
+			<img src="{photo}" />
+
+			<ul class="tags">{tags}</ul>
+		</li>
+	</ul>
+</main>
+
+</body>
+</html>
