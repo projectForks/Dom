@@ -37,7 +37,7 @@ class HTMLDocument extends Document {
 		//		);
 		//	},
 		//	$html
-		//);
+		//); 
 		$this->domDocument->loadHTML($html, LIBXML_SCHEMA_CREATE);
 
 		if(!$this->domDocument->documentElement) {
